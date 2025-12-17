@@ -1,0 +1,59 @@
+@using EventEase.Models
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="EventModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Event Name</label>
+        <InputText class="form-control" @bind-Value="EventModel.Name" />
+        <ValidationMessage For="() => EventModel.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Date</label>
+        <InputDate class="form-control" @bind-Value="EventModel.Date" />
+        <ValidationMessage For="() => EventModel.Date" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Location</label>
+        <InputText class="form-control" @bind-Value="EventModel.Location" />
+        <ValidationMessage For="() => EventModel.Location" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save Event</button>
+    <button class="btn btn-secondary ms-2" type="button" @onclick="Reset">Reset</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public Event EventModel { get; set; } = new Event();
+
+    // Supports two-way binding: bind-EventModel
+    [Parameter]
+    public EventCallback<Event> EventModelChanged { get; set; } = default!;
+
+    // Notifies parent when a valid event is submitted
+    [Parameter]
+    public EventCallback<Event> OnValidSubmit { get; set; } = default!;
+
+    protected async Task HandleValidSubmit()
+    {
+        if (EventModel is null) return;
+
+        // Notify parent
+        await OnValidSubmit.InvokeAsync(EventModel);
+
+        // Reset the form model (so the parent sees an empty form if it binds)
+        EventModel = new Event();
+        await EventModelChanged.InvokeAsync(EventModel);
+    }
+
+    private async Task Reset()
+    {
+        EventModel = new Event();
+        await EventModelChanged.InvokeAsync(EventModel);
+    }
+}

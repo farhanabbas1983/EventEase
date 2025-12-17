@@ -1,0 +1,24 @@
+@using Microsoft.AspNetCore.Components
+
+<div class="event-card card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@(!string.IsNullOrWhiteSpace(EventName) ? EventName : "Untitled Event")</h5>
+        <p class="card-subtitle mb-2 event-date">@FormattedDate</p>
+        <p class="card-text event-location">@(!string.IsNullOrWhiteSpace(Location) ? Location : "Location TBD")</p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    [EditorRequired]
+    public string EventName { get; set; } = string.Empty;
+
+    [Parameter]
+    public DateTime Date { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Location { get; set; } = string.Empty;
+
+    private string FormattedDate => Date == default ? "TBD" : Date.ToString("D");
+}

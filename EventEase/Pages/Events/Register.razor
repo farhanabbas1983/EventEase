@@ -1,0 +1,66 @@
+@page "/events/{id:guid}/register"
+
+@inject EventEase.Services.EventService EventService
+@inject NavigationManager Navigation
+@inject EventEase.Services.ToastService ToastService
+
+@using EventEase.Models
+
+<PageTitle>Register for Event</PageTitle>
+
+@if (ev is null)
+{
+    <h3>Event not found</h3>
+    <p>The requested event could not be found.</p>
+}
+else if (success)
+{
+    <div class="alert alert-success">Registration successful — thank you, @regModel.Name!</div>
+    <a href="/events/@ev.Id">Back to event</a>
+}
+else
+{
+    <h1>Register for @ev.Name</h1>
+
+    <EditForm Model="regModel" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control" @bind-Value="regModel.Name" />
+            <ValidationMessage For="() => regModel.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="regModel.Email" />
+            <ValidationMessage For="() => regModel.Email" />
+        </div>
+
+        <button class="btn btn-primary" type="submit">Complete Registration</button>
+        <a class="btn btn-link" href="/events/@ev.Id">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public Guid id { get; set; }
+
+    private Event? ev;
+    private Registration regModel = new Registration();
+    private bool success = false;
+
+    protected override void OnParametersSet()
+    {
+        ev = EventService.GetById(id);
+    }
+
+    private void HandleValidSubmit()
+    {
+        if (ev == null) return;
+        EventService.AddRegistration(ev.Id, new Registration { Name = regModel.Name, Email = regModel.Email });
+        success = true;
+        ToastService.ShowSuccess("Registration completed");
+    }
+}

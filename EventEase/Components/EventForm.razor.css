@@ -1,0 +1,8 @@
+.mb-3 label {
+    font-weight: 600;
+}
+
+/* small form tweaks */
+.event-form .btn + .btn {
+    margin-left: .5rem;
+}

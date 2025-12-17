@@ -1,0 +1,51 @@
+@implements IDisposable
+@inject EventEase.Services.ToastService ToastService
+
+<div class="toasts-container" aria-live="polite" aria-atomic="true">
+    @foreach (var t in toasts)
+    {
+        <div class="toast show align-items-center text-bg-@t.Level mb-2" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">@t.Message</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" @onclick="() => Remove(t.Id)"></button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<EventEase.Services.ToastMessage> toasts = new();
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += OnShow;
+    }
+
+    private void OnShow(EventEase.Services.ToastMessage t)
+    {
+        toasts.Add(t);
+        StateHasChanged();
+        _ = AutoRemoveAsync(t);
+    }
+
+    private async Task AutoRemoveAsync(EventEase.Services.ToastMessage t)
+    {
+        await Task.Delay(t.Duration);
+        Remove(t.Id);
+    }
+
+    private void Remove(string id)
+    {
+        var t = toasts.Find(x => x.Id == id);
+        if (t != null)
+        {
+            toasts.Remove(t);
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= OnShow;
+    }
+}

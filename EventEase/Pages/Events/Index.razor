@@ -1,0 +1,93 @@
+@page "/events"
+
+@inject EventEase.Services.EventService EventService
+@inject NavigationManager Navigation
+
+<PageTitle>Events</PageTitle>
+
+<h1>Events</h1>
+
+<button class="btn btn-outline-primary mb-3" @onclick="() => showForm = !showForm">
+    @(showForm ? "Hide" : "Add Event")
+</button>
+
+@if (showForm)
+{
+    <EventForm @bind-EventModel="newEvent" OnValidSubmit="AddEvent" />
+}
+
+<ConfirmModal @ref="confirmModal" />
+
+<div class="row mt-3">
+    @{
+        var currentEvents = EventService.GetAll().ToList();
+    }
+
+    @if (currentEvents.Any())
+    {
+        if (currentEvents.Count > 50)
+        {
+            <Virtualize Items="currentEvents" Context="ev">
+                <ItemContent>
+                    <div class="col-md-6 mb-3" @key="ev.Id">
+                        <EventCard EventName="@ev.Name" Date="@ev.Date" Location="@ev.Location" />
+                        <div class="mt-2">
+                            <NavLink class="me-3" href="@($"/events/{ev.Id}")">Details</NavLink>
+                            <NavLink class="me-3" href="@($"/events/{ev.Id}/register")">Register</NavLink>
+                            <NavLink class="me-3" href="@($"/events/{ev.Id}/edit")">Edit</NavLink>
+                            <button class="btn btn-link text-danger p-0" @onclick="() => ConfirmDelete(ev.Id, ev.Name)">Delete</button>
+                        </div>
+                    </div>
+                </ItemContent>
+            </Virtualize>
+        }
+        else
+        {
+            @foreach (var ev in currentEvents)
+            {
+                <div class="col-md-6 mb-3" @key="ev.Id">
+                    <EventCard EventName="@ev.Name" Date="@ev.Date" Location="@ev.Location" />
+                    <div class="mt-2">
+                        <NavLink class="me-3" href="@($"/events/{ev.Id}")">Details</NavLink>
+                        <NavLink class="me-3" href="@($"/events/{ev.Id}/register")">Register</NavLink>
+                        <NavLink class="me-3" href="@($"/events/{ev.Id}/edit")">Edit</NavLink>
+                        <button class="btn btn-link text-danger p-0" @onclick="() => ConfirmDelete(ev.Id, ev.Name)">Delete</button>
+                    </div>
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <p>No events found.</p>
+    }
+</div>
+
+@inject IJSRuntime JS
+
+@inject EventEase.Services.ToastService ToastService
+
+@code {
+    private bool showForm = false;
+    private Event newEvent = new Event();
+    private EventEase.Components.ConfirmModal? confirmModal;
+
+    private void AddEvent(Event e)
+    {
+        EventService.Add(new Event { Name = e.Name, Date = e.Date, Location = e.Location });
+        newEvent = new Event();
+        showForm = false;
+        ToastService.ShowSuccess("Event added");
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDelete(Guid eventId, string name)
+    {
+        if (confirmModal == null) return;
+        var ok = await confirmModal.ShowAsync("Delete event", $"Delete event '{name}'?");
+        if (!ok) return;
+        EventService.DeleteEvent(eventId);
+        ToastService.ShowSuccess("Event deleted");
+        StateHasChanged();
+    }
+}

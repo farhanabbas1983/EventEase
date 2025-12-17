@@ -1,0 +1,25 @@
+.event-card {
+    cursor: pointer;
+    transition: box-shadow .15s ease-in-out, transform .08s ease-in-out;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.event-card .card-title,
+.event-card .event-location {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-card .event-date {
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+.event-card .event-location {
+    color: #6c757d;
+}

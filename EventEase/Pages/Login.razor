@@ -1,0 +1,39 @@
+@page "/login"
+@using EventEase.Models
+@inject EventEase.Services.UserSessionService SessionService
+@inject EventEase.Services.ToastService ToastService
+@inject NavigationManager Navigation
+
+<PageTitle>Login</PageTitle>
+
+<h1>Sign in</h1>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText class="form-control" @bind-Value="loginModel.Name" />
+        <ValidationMessage For="() => loginModel.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="loginModel.Email" />
+        <ValidationMessage For="() => loginModel.Email" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Sign in</button>
+</EditForm>
+
+@code {
+    private UserSession loginModel = new UserSession();
+
+    private async Task HandleValidSubmit()
+    {
+        await SessionService.SignInAsync(new UserSession { Name = loginModel.Name, Email = loginModel.Email, SignedInAt = DateTime.UtcNow });
+        ToastService.ShowSuccess("Signed in");
+        Navigation.NavigateTo("/events");
+    }
+}
